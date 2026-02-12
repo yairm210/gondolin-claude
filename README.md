@@ -64,41 +64,6 @@ claude --version
 claude --help
 ```
 
-### Script Options
-
-**`gondolin-claude.sh`**:
-
-```bash
-# Standard Claude API usage
-./gondolin-claude.sh --mount ~/your/folder
-
-# AWS Bedrock usage (uses your current AWS profile)
-./gondolin-claude.sh --mount ~/your/folder --aws
-
-# With specific AWS profile and region
-export AWS_PROFILE=your-profile
-export AWS_REGION=us-east-1
-./gondolin-claude.sh --mount ~/your/folder --aws
-```
-
-**Options:**
-- `--mount <directory>` - (Required) Directory to mount at `/workspace`
-- `--aws` - Enable AWS Bedrock support with:
-  - AWS credentials mounted at `/root/.aws` (read-only)
-  - `CLAUDE_CODE_USE_BEDROCK=1` set automatically
-  - AWS environment variables passed: `AWS_PROFILE`, `AWS_REGION`, `AWS_DEFAULT_REGION`
-  - Anthropic model configuration passed: `ANTHROPIC_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, etc.
-  - AWS Bedrock network access enabled: `*.amazonaws.com`, `bedrock-runtime.*.amazonaws.com`
-
-The script automatically passes all `CLAUDE_CODE_*` environment variables to the VM.
-
-### Single Command (Without Shell)
-
-```bash
-GONDOLIN_GUEST_DIR=./custom-gondolin-assets \
-  npx @earendil-works/gondolin exec -- /usr/local/bin/claude --version
-```
-
 ---
 
 ## Network Configuration
@@ -110,11 +75,3 @@ Claude Code requires these hosts:
 - `bedrock-runtime.*.amazonaws.com` - Bedrock runtime (enabled with `--aws` flag)
 
 The script configures network access based on whether `--aws` is specified.
-
----
-
-## Scripts
-
-- **`build-image.sh`** - Build complete image (handles all prerequisites)
-- **`test-image.sh`** - Verify installation works
-- **`gondolin-claude.sh`** - Main wrapper for Claude Code

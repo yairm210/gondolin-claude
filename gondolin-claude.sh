@@ -126,8 +126,16 @@ if [[ "${USE_AWS}" == "true" ]]; then
   MOUNT_ARGS+=(--mount-hostfs "${HOME}/.aws:/root/.aws:ro")
 fi
 
+# Build additional arguments
+EXTRA_ARGS=()
+
+# Only use --cwd with local gondolin (npx version doesn't support it)
+if [[ "${USE_LOCAL_GONDOLIN:-1}" == "1" ]]; then
+  EXTRA_ARGS+=(--cwd /workspace)
+fi
+
 exec ${GONDOLIN_CMD} bash \
   "${MOUNT_ARGS[@]}" \
   "${ALLOW_HOSTS[@]}" \
-  --cwd /workspace \
+  ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
   ${ENV_ARGS[@]+"${ENV_ARGS[@]}"}
