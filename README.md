@@ -9,23 +9,34 @@ Successfully running Claude Code 2.1.39 inside a Gondolin sandboxed VM with Alpi
 ### Prerequisites
 
 **Install e2fsprogs** (required for building ext4 images):
-   ```bash
-   ./build-image.sh
-   ```
 
-   This script will:
-   - Install e2fsprogs if needed
-   - Clone Gondolin source if needed
-   - Download Claude Code package if needed
-   - Build the base Gondolin image
-   - Inject Claude Code into the rootfs
+```bash
+# macOS
+brew install e2fsprogs
 
-3. **Verify installation**:
-   ```bash
-   ./test-image.sh
-   ```
+# Linux (Debian/Ubuntu)
+sudo apt install e2fsprogs
+```
 
-Expected output: `✅ All tests passed!`
+### Build
+
+```bash
+./build-image.sh
+```
+
+This script automatically:
+- ✅ Clones Gondolin source (if needed)
+- ✅ Downloads Claude Code package (if needed)
+- ✅ Builds the base Gondolin image
+- ✅ Injects Claude Code into the rootfs
+
+### Verify
+
+```bash
+./test-image.sh
+```
+
+**Expected output**: `✅ All tests passed!`
 
 ---
 
@@ -110,7 +121,7 @@ The `gondolin-claude.sh` script includes all required hosts automatically.
 | "claude: not found" | Use full path: `/usr/local/bin/claude` |
 | "Authentication failed" | Ensure `platform.claude.com` is allowed |
 | Test fails | Re-run `./build-image.sh` |
-| Build fails | Check error message, may need to run with sudo for brew |
+| Build fails | Check error message, may need to install e2fsprogs first |
 
 ---
 
