@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Gondolin + Claude Code - Simple Bash Wrapper
+# Gondolin + Claude Code - General Wrapper
 # This script launches an interactive shell with Claude Code available
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -17,15 +17,20 @@ fi
 
 # Parse command line arguments
 MOUNT_DIR=""
+USE_AWS=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         --mount)
             MOUNT_DIR="$2"
             shift 2
             ;;
+        --aws)
+            USE_AWS=true
+            shift
+            ;;
         *)
             echo "❌ Unknown argument: $1"
-            echo "Usage: $0 --mount <directory>"
+            echo "Usage: $0 --mount <directory> [--aws]"
             exit 1
             ;;
     esac
@@ -34,7 +39,7 @@ done
 # Validate mount directory is provided
 if [[ -z "${MOUNT_DIR}" ]]; then
     echo "❌ Mount directory not specified"
-    echo "Usage: $0 --mount <directory>"
+    echo "Usage: $0 --mount <directory> [--aws]"
     exit 1
 fi
 
@@ -70,44 +75,59 @@ cd "${MOUNT_DIR}"
 
 # Build environment variable arguments
 ENV_ARGS=()
-if [[ -n "${CLAUDE_CODE_USE_BEDROCK:-}" ]]; then
-  ENV_ARGS+=(--env "CLAUDE_CODE_USE_BEDROCK=${CLAUDE_CODE_USE_BEDROCK}")
+
+# Pass CLAUDE_CODE_* environment variables (except CLAUDE_CODE_USE_BEDROCK which is controlled by --aws)
+for var in $(compgen -e | grep "^CLAUDE_CODE_" || true); do
+  if [[ "${var}" != "CLAUDE_CODE_USE_BEDROCK" ]]; then
+    ENV_ARGS+=(--env "${var}=${!var}")
+  fi
+done
+
+# If --aws flag is set, enable Bedrock and pass AWS/Anthropic environment variables
+if [[ "${USE_AWS}" == "true" ]]; then
+  # Set Bedrock flag
+  ENV_ARGS+=(--env "CLAUDE_CODE_USE_BEDROCK=1")
+
+  # Pass AWS environment variables
+  for var in AWS_PROFILE AWS_REGION AWS_DEFAULT_REGION; do
+    if [[ -n "${!var:-}" ]]; then
+      ENV_ARGS+=(--env "${var}=${!var}")
+    fi
+  done
+
+  # Pass Anthropic model configuration
+  for var in ANTHROPIC_MODEL ANTHROPIC_DEFAULT_SONNET_MODEL ANTHROPIC_DEFAULT_HAIKU_MODEL ANTHROPIC_DEFAULT_OPUS_MODEL ANTHROPIC_SMALL_FAST_MODEL; do
+    if [[ -n "${!var:-}" ]]; then
+      ENV_ARGS+=(--env "${var}=${!var}")
+    fi
+  done
 fi
 
-# Pass AWS environment variables to the VM
-if [[ -n "${AWS_PROFILE:-}" ]]; then
-  ENV_ARGS+=(--env "AWS_PROFILE=${AWS_PROFILE}")
-fi
-if [[ -n "${AWS_REGION:-}" ]]; then
-  ENV_ARGS+=(--env "AWS_REGION=${AWS_REGION}")
-fi
-if [[ -n "${AWS_DEFAULT_REGION:-}" ]]; then
-  ENV_ARGS+=(--env "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}")
+# Determine which hosts to allow
+ALLOW_HOSTS=(
+  --allow-host "api.anthropic.com"
+  --allow-host "platform.claude.com"
+)
+
+if [[ "${USE_AWS}" == "true" ]]; then
+  ALLOW_HOSTS+=(
+    --allow-host "*.amazonaws.com"
+    --allow-host "bedrock-runtime.*.amazonaws.com"
+  )
 fi
 
-# Pass Anthropic model configuration to the VM
-if [[ -n "${ANTHROPIC_MODEL:-}" ]]; then
-  ENV_ARGS+=(--env "ANTHROPIC_MODEL=${ANTHROPIC_MODEL}")
-fi
-if [[ -n "${ANTHROPIC_DEFAULT_SONNET_MODEL:-}" ]]; then
-  ENV_ARGS+=(--env "ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}")
-fi
-if [[ -n "${ANTHROPIC_DEFAULT_HAIKU_MODEL:-}" ]]; then
-  ENV_ARGS+=(--env "ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}")
-fi
-if [[ -n "${ANTHROPIC_DEFAULT_OPUS_MODEL:-}" ]]; then
-  ENV_ARGS+=(--env "ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}")
-fi
-if [[ -n "${ANTHROPIC_SMALL_FAST_MODEL:-}" ]]; then
-  ENV_ARGS+=(--env "ANTHROPIC_SMALL_FAST_MODEL=${ANTHROPIC_SMALL_FAST_MODEL}")
+# Build mount arguments
+MOUNT_ARGS=(
+  --mount-hostfs "${MOUNT_DIR}:/workspace"
+)
+
+# Only mount AWS credentials if using --aws flag
+if [[ "${USE_AWS}" == "true" ]]; then
+  MOUNT_ARGS+=(--mount-hostfs "${HOME}/.aws:/root/.aws:ro")
 fi
 
 exec ${GONDOLIN_CMD} bash \
-  --mount-hostfs "${MOUNT_DIR}:/workspace" \
-  --mount-hostfs "${HOME}/.aws:/root/.aws:ro" \
-  --allow-host "api.anthropic.com" \
-  --allow-host "platform.claude.com" \
-  --allow-host "*.amazonaws.com" \
-  --allow-host "bedrock-runtime.*.amazonaws.com" \
+  "${MOUNT_ARGS[@]}" \
+  "${ALLOW_HOSTS[@]}" \
   --cwd /workspace \
   ${ENV_ARGS[@]+"${ENV_ARGS[@]}"}

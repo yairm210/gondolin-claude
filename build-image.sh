@@ -175,7 +175,7 @@ add_file "${STAGE_DIR}/claude" "/usr/local/bin/claude"
 
 # Make it executable
 echo "      Setting permissions..."
-${DEBUGFS} -w -R "set_inode_field /usr/local/bin/claude mode 0100755" "${ROOTFS_IMAGE}" 2>&1 | grep -v "^debugfs"
+${DEBUGFS} -w -R "set_inode_field /usr/local/bin/claude mode 0100755" "${ROOTFS_IMAGE}" 2>&1 | grep -v "^debugfs" || true
 
 echo "   ✅ Claude Code injected successfully"
 
