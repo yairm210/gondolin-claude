@@ -25,18 +25,16 @@ sudo apt install e2fsprogs
 ```
 
 This script automatically:
-- ✅ Clones Gondolin source (if needed)
-- ✅ Downloads Claude Code package (if needed)
-- ✅ Builds the base Gondolin image
-- ✅ Injects Claude Code into the rootfs
+- Clones Gondolin source
+- Downloads Claude Code package
+- Builds the base Gondolin image
+- Injects Claude Code into the rootfs
 
 ### Verify
 
 ```bash
 ./test-image.sh
 ```
-
-**Expected output**: `✅ All tests passed!`
 
 ---
 
@@ -111,27 +109,6 @@ Claude Code requires these hosts:
 - `*.amazonaws.com` - Bedrock support (if using AWS Bedrock)
 
 The `gondolin-claude.sh` script includes all required hosts automatically.
-
----
-
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| "claude: not found" | Use full path: `/usr/local/bin/claude` |
-| "Authentication failed" | Ensure `platform.claude.com` is allowed |
-| Test fails | Re-run `./build-image.sh` |
-| Build fails | Check error message, may need to install e2fsprogs first |
-
----
-
-## What's Inside
-
-- **VM Image**: 268MB (Alpine Linux 3.23, Node.js 24.13, Claude Code 2.1.39)
-- **Boot time**: ~2-3 seconds
-- **Claude location**: `/opt/claude/` (embedded in rootfs)
-- **Wrapper script**: `/usr/local/bin/claude`
-- **PATH**: Pre-configured to include `/usr/local/bin`
 
 ---
 
