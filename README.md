@@ -39,20 +39,20 @@ sudo apt install e2fsprogs
 
 **Launch interactive shell**:
 ```bash
-./gondolin-claude.sh
+./gondolin-claude-bedrock.sh --mount ~/your/folder
 ```
 
 This starts a VM with:
 - Claude Code at `/usr/local/bin/claude`
-- Analytics repo mounted at `/workspace`
+- Specified repo mounted at `/workspace`
 - AWS credentials mounted at `/root/.aws` (read-only)
-- Internet access enabled for Claude API
+- Internet access enabled for Claude API and AWS Bedrock
 
 ### Inside the VM
 
 ```bash
-# Navigate to workspace
-cd /workspace
+# Already in /workspace
+pwd  # /workspace
 
 # Run Claude Code (PATH includes /usr/local/bin automatically)
 claude --version
@@ -69,9 +69,11 @@ GONDOLIN_GUEST_DIR=./custom-gondolin-assets \
 ### Custom Usage
 
 ```bash
- # If using AWS bedrock
+# Using AWS Bedrock with specific profile
 export CLAUDE_CODE_USE_BEDROCK=1
-./gondolin-claude.sh
+export AWS_PROFILE=your-profile
+export AWS_REGION=your-region
+./gondolin-claude-bedrock.sh --mount ~/your/folder
 ```
 
 ---
@@ -83,7 +85,7 @@ Claude Code requires these hosts:
 - `platform.claude.com` - Authentication (**required**)
 - `*.amazonaws.com` - Bedrock support (if using AWS Bedrock)
 
-The `gondolin-claude.sh` script includes all required hosts automatically.
+The `gondolin-claude-bedrock.sh` script includes all required hosts automatically and passes AWS credentials and Anthropic model configuration to the VM.
 
 ---
 
@@ -91,4 +93,4 @@ The `gondolin-claude.sh` script includes all required hosts automatically.
 
 - **`build-image.sh`** - Build complete image (handles all prerequisites)
 - **`test-image.sh`** - Verify installation works
-- **`gondolin-claude.sh`** - Launch interactive shell (daily use)
+- **`gondolin-claude-bedrock.sh`** - Launch interactive shell with Bedrock support (daily use)

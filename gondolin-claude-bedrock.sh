@@ -6,7 +6,14 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 IMAGE_DIR="${SCRIPT_DIR}/custom-gondolin-assets"
-GONDOLIN_BIN="${SCRIPT_DIR}/.build/gondolin/host/dist/bin/gondolin.js"
+
+# Toggle between local gondolin installation and npx version
+# Set USE_LOCAL_GONDOLIN=0 to use npx, otherwise uses ~/dev/gondolin (default)
+if [[ "${USE_LOCAL_GONDOLIN:-1}" == "1" ]]; then
+  GONDOLIN_CMD="node ${HOME}/dev/gondolin/host/dist/bin/gondolin.js"
+else
+  GONDOLIN_CMD="npx @earendil-works/gondolin"
+fi
 
 # Parse command line arguments
 MOUNT_DIR=""
@@ -67,7 +74,35 @@ if [[ -n "${CLAUDE_CODE_USE_BEDROCK:-}" ]]; then
   ENV_ARGS+=(--env "CLAUDE_CODE_USE_BEDROCK=${CLAUDE_CODE_USE_BEDROCK}")
 fi
 
-exec node "${GONDOLIN_BIN}" bash \
+# Pass AWS environment variables to the VM
+if [[ -n "${AWS_PROFILE:-}" ]]; then
+  ENV_ARGS+=(--env "AWS_PROFILE=${AWS_PROFILE}")
+fi
+if [[ -n "${AWS_REGION:-}" ]]; then
+  ENV_ARGS+=(--env "AWS_REGION=${AWS_REGION}")
+fi
+if [[ -n "${AWS_DEFAULT_REGION:-}" ]]; then
+  ENV_ARGS+=(--env "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}")
+fi
+
+# Pass Anthropic model configuration to the VM
+if [[ -n "${ANTHROPIC_MODEL:-}" ]]; then
+  ENV_ARGS+=(--env "ANTHROPIC_MODEL=${ANTHROPIC_MODEL}")
+fi
+if [[ -n "${ANTHROPIC_DEFAULT_SONNET_MODEL:-}" ]]; then
+  ENV_ARGS+=(--env "ANTHROPIC_DEFAULT_SONNET_MODEL=${ANTHROPIC_DEFAULT_SONNET_MODEL}")
+fi
+if [[ -n "${ANTHROPIC_DEFAULT_HAIKU_MODEL:-}" ]]; then
+  ENV_ARGS+=(--env "ANTHROPIC_DEFAULT_HAIKU_MODEL=${ANTHROPIC_DEFAULT_HAIKU_MODEL}")
+fi
+if [[ -n "${ANTHROPIC_DEFAULT_OPUS_MODEL:-}" ]]; then
+  ENV_ARGS+=(--env "ANTHROPIC_DEFAULT_OPUS_MODEL=${ANTHROPIC_DEFAULT_OPUS_MODEL}")
+fi
+if [[ -n "${ANTHROPIC_SMALL_FAST_MODEL:-}" ]]; then
+  ENV_ARGS+=(--env "ANTHROPIC_SMALL_FAST_MODEL=${ANTHROPIC_SMALL_FAST_MODEL}")
+fi
+
+exec ${GONDOLIN_CMD} bash \
   --mount-hostfs "${MOUNT_DIR}:/workspace" \
   --mount-hostfs "${HOME}/.aws:/root/.aws:ro" \
   --allow-host "api.anthropic.com" \
@@ -75,4 +110,4 @@ exec node "${GONDOLIN_BIN}" bash \
   --allow-host "*.amazonaws.com" \
   --allow-host "bedrock-runtime.*.amazonaws.com" \
   --cwd /workspace \
-  "${ENV_ARGS[@]}"
+  ${ENV_ARGS[@]+"${ENV_ARGS[@]}"}
