@@ -129,9 +129,9 @@ fi
 # Build additional arguments
 EXTRA_ARGS=()
 
-# Only use --cwd with local gondolin (npx version doesn't support it)
+# Only use --cwd and --cmd with local gondolin (npx version doesn't support them)
 if [[ "${USE_LOCAL_GONDOLIN:-1}" == "1" ]]; then
-  EXTRA_ARGS+=(--cwd /workspace)
+  EXTRA_ARGS+=(--cwd /workspace --cmd /usr/local/bin/claude)
 fi
 
 exec ${GONDOLIN_CMD} bash \
