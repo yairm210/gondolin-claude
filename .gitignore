@@ -1,0 +1,6 @@
+# Gondolin VM image assets (too large for git)
+custom-gondolin-assets/
+custom-gondolin-assets
+
+# Backup files
+*.backup

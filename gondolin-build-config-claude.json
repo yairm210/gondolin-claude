@@ -1,0 +1,34 @@
+{
+  "arch": "aarch64",
+  "distro": "alpine",
+  "env": {
+    "PATH": "/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin"
+  },
+  "alpine": {
+    "version": "3.23.0",
+    "kernelPackage": "linux-virt",
+    "kernelImage": "vmlinuz-virt",
+    "rootfsPackages": [
+      "linux-virt",
+      "rng-tools",
+      "bash",
+      "ca-certificates",
+      "curl",
+      "wget",
+      "nodejs",
+      "uv",
+      "python3"
+    ],
+    "initramfsPackages": []
+  },
+  "rootfs": {
+    "label": "gondolin-claude-root",
+    "initScripts": [
+      "#!/bin/sh",
+      "echo '=== Gondolin Custom Image for Claude Code ==='",
+      "echo 'Claude Code is embedded in /opt/claude'",
+      "echo 'Wrapper script available at /usr/local/bin/claude'",
+      "echo '=== Image ready ==='"
+    ]
+  }
+}
