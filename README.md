@@ -6,7 +6,9 @@ Successfully running Claude Code 2.1.39 inside a Gondolin sandboxed VM with Alpi
 
 ## 1. Building the Image
 
-### One-Command Build
+### Prerequisites
+
+**Install e2fsprogs** (required for building ext4 images):
    ```bash
    ./build-image.sh
    ```

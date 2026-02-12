@@ -17,13 +17,17 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 # ============================================================================
-# Step 1: Check and install e2fsprogs
+# Step 1: Check e2fsprogs
 # ============================================================================
 echo "1️⃣  Checking e2fsprogs..."
 if [[ ! -x "${DEBUGFS}" ]]; then
-    echo "   ⚠️  e2fsprogs not found, installing..."
-    brew install e2fsprogs
-    echo "   ✅ e2fsprogs installed"
+    echo "   ❌ e2fsprogs not found!"
+    echo ""
+    echo "   Please install e2fsprogs first:"
+    echo "   - macOS: brew install e2fsprogs"
+    echo "   - Linux: sudo apt install e2fsprogs"
+    echo ""
+    exit 1
 else
     echo "   ✅ e2fsprogs already installed"
 fi
