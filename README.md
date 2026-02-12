@@ -1,4 +1,4 @@
-# Gondolin + Claude Code
+# [Gondolin](https://github.com/earendil-works/gondolin) + Claude Code
 
 Run Claude Code inside a Gondolin sandboxed VM with Alpine Linux.
 
