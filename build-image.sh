@@ -5,16 +5,20 @@ set -euo pipefail
 # This script handles all prerequisites and builds the complete image
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-CLAUDE_STANDALONE="${SCRIPT_DIR}/claude-code-standalone"
+BUILD_DIR="${SCRIPT_DIR}/.build"
+CLAUDE_STANDALONE="${BUILD_DIR}/claude-code-standalone"
+GONDOLIN_SRC="${BUILD_DIR}/gondolin"
 CUSTOM_IMAGE_DIR="${SCRIPT_DIR}/custom-gondolin-assets"
 ROOTFS_IMAGE="${CUSTOM_IMAGE_DIR}/rootfs.ext4"
 DEBUGFS="/opt/homebrew/opt/e2fsprogs/sbin/debugfs"
-GONDOLIN_SRC="/tmp/gondolin"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🏗️  Gondolin + Claude Code Image Builder"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
+
+# Create build directory
+mkdir -p "${BUILD_DIR}"
 
 # ============================================================================
 # Step 1: Check e2fsprogs
