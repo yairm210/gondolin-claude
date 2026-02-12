@@ -6,3 +6,4 @@ custom-gondolin-assets/
 
 # Backup files
 *.backup
+.claude/settings.local.json

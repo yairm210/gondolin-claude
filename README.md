@@ -1,8 +1,6 @@
 # Gondolin + Claude Code
 
-Successfully running Claude Code 2.1.39 inside a Gondolin sandboxed VM with Alpine Linux.
-
----
+Run Claude Code inside a Gondolin sandboxed VM with Alpine Linux.
 
 ## 1. Building the Image
 
@@ -24,7 +22,6 @@ sudo apt install e2fsprogs
 ./build-image.sh
 ```
 
-This script automatically:
 - Clones Gondolin source
 - Downloads Claude Code package
 - Builds the base Gondolin image
@@ -35,8 +32,6 @@ This script automatically:
 ```bash
 ./test-image.sh
 ```
-
----
 
 ## 2. Using the Image
 
@@ -73,29 +68,9 @@ GONDOLIN_GUEST_DIR=./custom-gondolin-assets \
 
 ### Custom Usage
 
-**Mount different directory**:
 ```bash
-GONDOLIN_GUEST_DIR=./custom-gondolin-assets \
-  npx @earendil-works/gondolin bash \
-  --mount-hostfs /path/to/your/repo:/workspace \
-  --allow-host api.anthropic.com \
-  --allow-host platform.claude.com
-```
-
-**With API key**:
-```bash
-GONDOLIN_GUEST_DIR=./custom-gondolin-assets \
-  npx @earendil-works/gondolin bash \
-  --mount-hostfs ~/dev/analytics:/workspace \
-  --host-secret ANTHROPIC_API_KEY@api.anthropic.com,platform.claude.com \
-  --allow-host api.anthropic.com \
-  --allow-host platform.claude.com
-```
-
-**With Bedrock**:
-```bash
+ # If using AWS bedrock
 export CLAUDE_CODE_USE_BEDROCK=1
-export AWS_REGION=us-east-1
 ./gondolin-claude.sh
 ```
 
