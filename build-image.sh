@@ -5,7 +5,7 @@ set -euo pipefail
 # This script handles all prerequisites and builds the complete image
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-CLAUDE_STANDALONE="${HOME}/claude-code-standalone"
+CLAUDE_STANDALONE="${SCRIPT_DIR}/claude-code-standalone"
 CUSTOM_IMAGE_DIR="${SCRIPT_DIR}/custom-gondolin-assets"
 ROOTFS_IMAGE="${CUSTOM_IMAGE_DIR}/rootfs.ext4"
 DEBUGFS="/opt/homebrew/opt/e2fsprogs/sbin/debugfs"

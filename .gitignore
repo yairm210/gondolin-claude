@@ -2,5 +2,9 @@
 custom-gondolin-assets/
 custom-gondolin-assets
 
+# Claude Code standalone package (extracted from npm)
+claude-code-standalone/
+claude-code-standalone
+
 # Backup files
 *.backup
