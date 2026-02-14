@@ -166,6 +166,10 @@ echo "   📝 Creating claude wrapper script..."
 # Create wrapper script in temp file
 cat > "${STAGE_DIR}/claude" <<'EOF'
 #!/bin/bash
+# Copy pre-configured .claude.json if it doesn't exist
+if [[ ! -f /root/.claude.json ]] && [[ -f /opt/claude/.claude.json ]]; then
+    cp /opt/claude/.claude.json /root/.claude.json
+fi
 exec node /opt/claude/cli.js "$@"
 EOF
 
@@ -176,6 +180,56 @@ add_file "${STAGE_DIR}/claude" "/usr/local/bin/claude"
 # Make it executable
 echo "      Setting permissions..."
 ${DEBUGFS} -w -R "set_inode_field /usr/local/bin/claude mode 0100755" "${ROOTFS_IMAGE}" 2>&1 | grep -v "^debugfs" || true
+
+echo ""
+echo "   📝 Creating pre-configured .claude.json..."
+
+# Create pre-configured .claude.json to skip onboarding prompts
+cat > "${STAGE_DIR}/.claude.json" <<'EOF'
+{
+  "numStartups": 1,
+  "opusProMigrationComplete": true,
+  "cachedChromeExtensionInstalled": false,
+  "hasCompletedOnboarding": true,
+  "projects": {
+    "/workspace": {
+      "allowedTools": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": true,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "lastCost": 0,
+      "lastAPIDuration": 0,
+      "lastAPIDurationWithoutRetries": 0,
+      "lastToolDuration": 0,
+      "lastLinesAdded": 0,
+      "lastLinesRemoved": 0,
+      "lastTotalInputTokens": 0,
+      "lastTotalOutputTokens": 0,
+      "lastTotalCacheCreationInputTokens": 0,
+      "lastTotalCacheReadInputTokens": 0,
+      "lastTotalWebSearchRequests": 0,
+      "lastModelUsage": {},
+      "lastSessionId": "c4e9f4e2-a576-40a8-a5fc-c032d1789c3b"
+    }
+  },
+  "userID": "6c981baf996668cd81435833a4ac8f791554c16e033146240361d7e1e4437459",
+  "officialMarketplaceAutoInstallAttempted": true,
+  "officialMarketplaceAutoInstalled": false,
+  "officialMarketplaceAutoInstallFailReason": "git_unavailable",
+  "officialMarketplaceAutoInstallRetryCount": 1,
+  "officialMarketplaceAutoInstallLastAttemptTime": 1771105160129,
+  "officialMarketplaceAutoInstallNextRetryTime": 1771112360129
+}
+EOF
+
+# Add .claude.json to /opt/claude/ (since /root gets overlaid)
+# This will be copied to /root/.claude.json on first run by the wrapper script
+add_file "${STAGE_DIR}/.claude.json" "/opt/claude/.claude.json"
 
 echo "   ✅ Claude Code injected successfully"
 

@@ -126,16 +126,19 @@ if [[ "${USE_AWS}" == "true" ]]; then
   MOUNT_ARGS+=(--mount-hostfs "${HOME}/.aws:/root/.aws:ro")
 fi
 
-# Build additional arguments
-EXTRA_ARGS=()
-
-# Only use --cwd and --cmd with local gondolin (npx version doesn't support them)
+# Execute differently based on whether using local gondolin
 if [[ "${USE_LOCAL_GONDOLIN:-1}" == "1" ]]; then
-  EXTRA_ARGS+=(--cwd /workspace --cmd /usr/local/bin/claude)
+  # Local gondolin supports -- syntax and --cwd
+  exec ${GONDOLIN_CMD} bash \
+    "${MOUNT_ARGS[@]}" \
+    "${ALLOW_HOSTS[@]}" \
+    ${ENV_ARGS[@]+"${ENV_ARGS[@]}"} \
+    --cwd /workspace \
+    -- /usr/local/bin/claude --dangerously-skip-permissions
+else
+  # npx version doesn't support -- syntax or --cwd
+  exec ${GONDOLIN_CMD} bash \
+    "${MOUNT_ARGS[@]}" \
+    "${ALLOW_HOSTS[@]}" \
+    ${ENV_ARGS[@]+"${ENV_ARGS[@]}"}
 fi
-
-exec ${GONDOLIN_CMD} bash \
-  "${MOUNT_ARGS[@]}" \
-  "${ALLOW_HOSTS[@]}" \
-  ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
-  ${ENV_ARGS[@]+"${ENV_ARGS[@]}"}
