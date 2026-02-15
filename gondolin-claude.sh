@@ -30,17 +30,16 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "❌ Unknown argument: $1"
-            echo "Usage: $0 --mount <directory> [--aws]"
+            echo "Usage: $0 [--mount <directory>] [--aws]"
             exit 1
             ;;
     esac
 done
 
-# Validate mount directory is provided
+# Default to current working directory if no mount specified
 if [[ -z "${MOUNT_DIR}" ]]; then
-    echo "❌ Mount directory not specified"
-    echo "Usage: $0 --mount <directory> [--aws]"
-    exit 1
+    MOUNT_DIR="$(pwd)"
+    echo "ℹ️  No mount directory specified, using current directory: ${MOUNT_DIR}"
 fi
 
 # Expand tilde to home directory if present
@@ -134,7 +133,7 @@ if [[ "${USE_LOCAL_GONDOLIN:-1}" == "1" ]]; then
     "${ALLOW_HOSTS[@]}" \
     ${ENV_ARGS[@]+"${ENV_ARGS[@]}"} \
     --cwd /workspace \
-    -- /usr/local/bin/claude --dangerously-skip-permissions
+    -- /usr/local/bin/claude
 else
   # npx version doesn't support -- syntax or --cwd
   exec ${GONDOLIN_CMD} bash \

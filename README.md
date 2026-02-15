@@ -35,34 +35,51 @@ sudo apt install e2fsprogs
 
 ## 2. Using the Image
 
-### Quick Start
+### Installation (Optional)
 
-**For standard Claude API users**:
+To make the script callable from anywhere, add this repository to your PATH:
+
 ```bash
-./gondolin-claude.sh --mount ~/your/folder
+# From within the gondolin-claude directory
+# For bash (~/.bashrc or ~/.bash_profile)
+echo "export PATH=\"$(pwd):\$PATH\"" >> ~/.bashrc
+
+# For zsh (~/.zshrc)
+echo "export PATH=\"$(pwd):\$PATH\"" >> ~/.zshrc
 ```
 
-**For AWS Bedrock users** (automatically configures AWS credentials and model profiles):
+Then reload your shell or run `source ~/.zshrc` (or `~/.bashrc`).
+
+### Usage
+
 ```bash
-./gondolin-claude.sh --mount ~/your/folder --aws
+./gondolin-claude.sh [OPTIONS]
+```
+
+**Options:**
+
+| Option | Input | Description |
+|--------|-------|-------------|
+| `--mount` | `<directory>` | Directory to mount at `/workspace` (defaults to current directory) |
+| `--aws` | (none) | Enable AWS Bedrock support with credentials and model profiles |
+
+**Examples:**
+
+```bash
+# Mount current directory (default)
+./gondolin-claude.sh
+
+# Mount specific directory
+./gondolin-claude.sh --mount ~/your/folder
+
+# Use AWS Bedrock with current directory
+./gondolin-claude.sh --aws
 ```
 
 The script starts a VM with:
-- Claude Code at `/usr/local/bin/claude`
-- Specified repo mounted at `/workspace`
-- Working directory set to `/workspace`
+- Your directory mounted at `/workspace` and set as working directory
+- Claude running from that directory
 - AWS credentials mounted (only with `--aws` flag)
-
-### Inside the VM
-
-```bash
-# Already in /workspace
-pwd  # /workspace
-
-# Run Claude Code (PATH includes /usr/local/bin automatically)
-claude --version
-claude --help
-```
 
 ---
 
@@ -73,5 +90,3 @@ Claude Code requires these hosts:
 - `platform.claude.com` - Authentication (**required**)
 - `*.amazonaws.com` - Bedrock support (enabled with `--aws` flag)
 - `bedrock-runtime.*.amazonaws.com` - Bedrock runtime (enabled with `--aws` flag)
-
-The script configures network access based on whether `--aws` is specified.
