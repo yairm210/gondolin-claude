@@ -18,6 +18,7 @@ fi
 # Parse command line arguments
 MOUNT_DIR=""
 USE_AWS=false
+CLAUDE_ARGS=()
 while [[ $# -gt 0 ]]; do
     case $1 in
         --mount)
@@ -28,9 +29,14 @@ while [[ $# -gt 0 ]]; do
             USE_AWS=true
             shift
             ;;
+        --)
+            shift
+            CLAUDE_ARGS=("$@")
+            break
+            ;;
         *)
             echo "❌ Unknown argument: $1"
-            echo "Usage: $0 [--mount <directory>] [--aws]"
+            echo "Usage: $0 [--mount <directory>] [--aws] [-- CLAUDE_ARGS...]"
             exit 1
             ;;
     esac
@@ -133,7 +139,7 @@ if [[ "${USE_LOCAL_GONDOLIN:-1}" == "1" ]]; then
     "${ALLOW_HOSTS[@]}" \
     ${ENV_ARGS[@]+"${ENV_ARGS[@]}"} \
     --cwd /workspace \
-    -- /usr/local/bin/claude
+    -- /usr/local/bin/claude ${CLAUDE_ARGS[@]+"${CLAUDE_ARGS[@]}"}
 else
   # npx version doesn't support -- syntax or --cwd
   exec ${GONDOLIN_CMD} bash \

@@ -53,7 +53,7 @@ Then reload your shell or run `source ~/.zshrc` (or `~/.bashrc`).
 ### Usage
 
 ```bash
-./gondolin-claude.sh [OPTIONS]
+./gondolin-claude.sh [OPTIONS] [-- CLAUDE_ARGS...]
 ```
 
 **Options:**
@@ -62,18 +62,16 @@ Then reload your shell or run `source ~/.zshrc` (or `~/.bashrc`).
 |--------|-------|-------------|
 | `--mount` | `<directory>` | Directory to mount at `/workspace` (defaults to current directory) |
 | `--aws` | (none) | Enable AWS Bedrock support with credentials and model profiles |
+| `--` | `CLAUDE_ARGS...` | Pass remaining arguments to Claude Code (e.g., `--fast`, `--model opus`) |
 
-**Examples:**
+**Example:**
 
 ```bash
-# Mount current directory (default)
+# Minimal usage (mounts current directory)
 ./gondolin-claude.sh
 
-# Mount specific directory
-./gondolin-claude.sh --mount ~/your/folder
-
-# Use AWS Bedrock with current directory
-./gondolin-claude.sh --aws
+# All options combined
+./gondolin-claude.sh --mount ~/dev/project --aws -- --fast
 ```
 
 The script starts a VM with:
