@@ -18,6 +18,7 @@ fi
 # Parse command line arguments
 MOUNT_DIR=""
 USE_AWS=false
+MOUNT_LOCAL_CLAUDE_SETTINGS=false
 CLAUDE_ARGS=()
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -29,6 +30,10 @@ while [[ $# -gt 0 ]]; do
             USE_AWS=true
             shift
             ;;
+        --mount-local-claude-settings)
+            MOUNT_LOCAL_CLAUDE_SETTINGS=true
+            shift
+            ;;
         --)
             shift
             CLAUDE_ARGS=("$@")
@@ -36,7 +41,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "❌ Unknown argument: $1"
-            echo "Usage: $0 [--mount <directory>] [--aws] [-- CLAUDE_ARGS...]"
+            echo "Usage: $0 [--mount <directory>] [--aws] [--mount-local-claude-settings] [-- CLAUDE_ARGS...]"
             exit 1
             ;;
     esac
@@ -123,12 +128,47 @@ fi
 
 # Build mount arguments
 MOUNT_ARGS=(
-  --mount-hostfs "${MOUNT_DIR}:/workspace"
+  --mount-hostfs "${MOUNT_DIR}:/workspace:rw"
 )
 
 # Only mount AWS credentials if using --aws flag
 if [[ "${USE_AWS}" == "true" ]]; then
   MOUNT_ARGS+=(--mount-hostfs "${HOME}/.aws:/root/.aws:ro")
+fi
+
+# Create a temporary directory for Claude settings if requested
+# This allows Claude in the VM to make required changes
+CLAUDE_SETTINGS_TEMP=""
+if [[ "${MOUNT_LOCAL_CLAUDE_SETTINGS}" == "true" ]]; then
+  if [[ -d "${HOME}/.claude" ]]; then
+    CLAUDE_SETTINGS_TEMP=$(mktemp -d)
+
+    # Copy CLAUDE.md if it exists
+    if [[ -f "${HOME}/.claude/CLAUDE.md" ]]; then
+      cp "${HOME}/.claude/CLAUDE.md" "${CLAUDE_SETTINGS_TEMP}/"
+    fi
+
+    # Copy skills directory if it exists
+    if [[ -d "${HOME}/.claude/skills" ]]; then
+      cp -r "${HOME}/.claude/skills" "${CLAUDE_SETTINGS_TEMP}/"
+    fi
+
+    # Mount the temp directory
+    MOUNT_ARGS+=(--mount-hostfs "${CLAUDE_SETTINGS_TEMP}:/tmp/claude-settings-host:ro")
+  else
+    echo "⚠️  Warning: ~/.claude directory not found, skipping"
+  fi
+fi
+
+# Build the startup command
+STARTUP_CMD="/usr/local/bin/claude"
+if [[ ${#CLAUDE_ARGS[@]} -gt 0 ]]; then
+  STARTUP_CMD="${STARTUP_CMD} ${CLAUDE_ARGS[*]}"
+fi
+
+# If copying Claude settings, prepend copy commands
+if [[ -n "${CLAUDE_SETTINGS_TEMP}" ]]; then
+  STARTUP_CMD="mkdir -p /root/.claude && cp -r /tmp/claude-settings-host/* /root/.claude/ 2>/dev/null || true && ${STARTUP_CMD}"
 fi
 
 # Execute differently based on whether using local gondolin
@@ -139,7 +179,7 @@ if [[ "${USE_LOCAL_GONDOLIN:-1}" == "1" ]]; then
     "${ALLOW_HOSTS[@]}" \
     ${ENV_ARGS[@]+"${ENV_ARGS[@]}"} \
     --cwd /workspace \
-    -- /usr/local/bin/claude ${CLAUDE_ARGS[@]+"${CLAUDE_ARGS[@]}"}
+    -- bash -c "${STARTUP_CMD}"
 else
   # npx version doesn't support -- syntax or --cwd
   exec ${GONDOLIN_CMD} bash \
