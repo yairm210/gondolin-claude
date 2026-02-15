@@ -59,9 +59,21 @@ echo ""
 echo "3️⃣  Checking Claude Code package..."
 if [[ ! -d "${CLAUDE_STANDALONE}" ]]; then
     echo "   ⚠️  Claude Code package not found, downloading..."
+
+    # Get latest version from npm
+    echo "   🔍 Finding latest Claude Code version..."
+    LATEST_VERSION=$(curl -s https://registry.npmjs.org/@anthropic-ai/claude-code/latest | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
+
+    if [[ -z "${LATEST_VERSION}" ]]; then
+        echo "   ❌ Failed to fetch latest version from npm"
+        exit 1
+    fi
+
+    echo "   📦 Latest version: ${LATEST_VERSION}"
+
     mkdir -p "${CLAUDE_STANDALONE}"
     cd /tmp
-    curl -L https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.39.tgz -o claude.tgz
+    curl -L "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-${LATEST_VERSION}.tgz" -o claude.tgz
     tar -xzf claude.tgz
     cp -r package/* "${CLAUDE_STANDALONE}/"
     rm -rf package claude.tgz

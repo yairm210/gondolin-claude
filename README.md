@@ -62,6 +62,7 @@ Then reload your shell or run `source ~/.zshrc` (or `~/.bashrc`).
 |--------|-------|-------------|
 | `--mount` | `<directory>` | Directory to mount at `/workspace` (defaults to current directory) |
 | `--aws` | (none) | Enable AWS Bedrock support with credentials and model profiles |
+| `--local-claude-settings` | (none) | Copy `~/.claude/CLAUDE.md` and `~/.claude/skills/` into the VM |
 | `--` | `CLAUDE_ARGS...` | Pass remaining arguments to Claude Code (e.g., `--fast`, `--model opus`) |
 
 **Example:**
@@ -71,13 +72,14 @@ Then reload your shell or run `source ~/.zshrc` (or `~/.bashrc`).
 ./gondolin-claude.sh
 
 # All options combined
-./gondolin-claude.sh --mount ~/dev/project --aws -- --fast
+./gondolin-claude.sh --mount ~/dev/project --aws --local-claude-settings -- --fast
 ```
 
 The script starts a VM with:
-- Your directory mounted at `/workspace` and set as working directory
+- Your directory mounted at `/workspace` (read-write) and set as working directory
 - Claude running from that directory
 - AWS credentials mounted (only with `--aws` flag)
+- Local Claude settings copied into VM (only with `--local-claude-settings` flag)
 
 ---
 

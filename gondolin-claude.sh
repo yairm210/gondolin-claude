@@ -18,7 +18,7 @@ fi
 # Parse command line arguments
 MOUNT_DIR=""
 USE_AWS=false
-MOUNT_LOCAL_CLAUDE_SETTINGS=false
+LOCAL_CLAUDE_SETTINGS=false
 CLAUDE_ARGS=()
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -30,8 +30,8 @@ while [[ $# -gt 0 ]]; do
             USE_AWS=true
             shift
             ;;
-        --mount-local-claude-settings)
-            MOUNT_LOCAL_CLAUDE_SETTINGS=true
+        --local-claude-settings)
+            LOCAL_CLAUDE_SETTINGS=true
             shift
             ;;
         --)
@@ -41,7 +41,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "❌ Unknown argument: $1"
-            echo "Usage: $0 [--mount <directory>] [--aws] [--mount-local-claude-settings] [-- CLAUDE_ARGS...]"
+            echo "Usage: $0 [--mount <directory>] [--aws] [--local-claude-settings] [-- CLAUDE_ARGS...]"
             exit 1
             ;;
     esac
@@ -139,7 +139,7 @@ fi
 # Create a temporary directory for Claude settings if requested
 # This allows Claude in the VM to make required changes
 CLAUDE_SETTINGS_TEMP=""
-if [[ "${MOUNT_LOCAL_CLAUDE_SETTINGS}" == "true" ]]; then
+if [[ "${LOCAL_CLAUDE_SETTINGS}" == "true" ]]; then
   if [[ -d "${HOME}/.claude" ]]; then
     CLAUDE_SETTINGS_TEMP=$(mktemp -d)
 
